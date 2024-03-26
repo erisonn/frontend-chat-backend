@@ -7,7 +7,6 @@ import cors from "cors";
 dotenv.config();
 
 const CLIENT_URL = process.env.CLIENT_URL;
-console.log(CLIENT_URL)
 
 const app = express();
 const port = 3000;

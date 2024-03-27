@@ -4,6 +4,8 @@ import bodyParser from "body-parser";
 import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
+import jsonwebtoken from "jsonwebtoken";
+import { PRIVATE_KEY, validateToken } from "./auth.js";
 
 dotenv.config();
 
@@ -47,9 +49,26 @@ app.post("/login", cors(corsOptions), (req, res) => {
     bcrypt.compare(password, userFromDb?.password, function (err, result) {
       if (!result) {
         return res.status(200).send("User or password is incorrect");
+      } else {
+        //generate token and send it back
+        const token = jsonwebtoken.sign(
+          {
+            user: JSON.stringify(userFromDb),
+          },
+          PRIVATE_KEY
+        );
+        return res.status(200).json({ data: { userFromDb, token } });
       }
     });
   });
+});
+
+app.use("*", validateToken);
+
+app.get("/private", (req, res) => {
+  const { user } = req.headers;
+  console.log(user);
+  res.status(200).send('PRIVATE ROUTE')
 });
 
 app.listen(port, () => {

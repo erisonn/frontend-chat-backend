@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
-import { initializeDb, createUser } from "./db.js";
+import { initializeDb, createUser, getUserByUsername } from "./db.js";
 import bodyParser from "body-parser";
 import express from "express";
 import cors from "cors";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -32,8 +33,23 @@ app.use(function (req, res, next) {
 
 app.post("/register", cors(corsOptions), (req, res) => {
   const { user, password, email } = req.body.userData;
-  
+
   createUser(user, password, email, res);
+});
+
+app.post("/login", cors(corsOptions), (req, res) => {
+  const { user, password, email } = req.body.userData;
+
+  getUserByUsername(user).then((userFromDb) => {
+    if (!userFromDb) {
+      return res.status(200).send("User does not exist");
+    }
+    bcrypt.compare(password, userFromDb?.password, function (err, result) {
+      if (!result) {
+        return res.status(200).send("User or password is incorrect");
+      }
+    });
+  });
 });
 
 app.listen(port, () => {

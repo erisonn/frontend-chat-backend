@@ -40,7 +40,7 @@ app.post("/register", cors(corsOptions), (req, res) => {
 });
 
 app.post("/login", cors(corsOptions), (req, res) => {
-  const { user, password, email } = req.body.userData;
+  const { user, password } = req.body.userData;
 
   getUserByUsername(user).then((userFromDb) => {
     if (!userFromDb) {
@@ -65,10 +65,16 @@ app.post("/login", cors(corsOptions), (req, res) => {
 
 app.use("*", validateToken);
 
-app.get("/private", (req, res) => {
+app.get("/messages", (req, res) => {
   const { user } = req.headers;
-  console.log(user);
-  res.status(200).send('PRIVATE ROUTE')
+  const parsedUser = JSON.parse(user);
+
+  res.status(200).json({
+    user: {
+      username: parsedUser.username,
+      userId: parsedUser.userid,
+    },
+  });
 });
 
 app.listen(port, () => {

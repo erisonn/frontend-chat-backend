@@ -32,10 +32,10 @@ app.use(function (req, res, next) {
 
 app.post("/register", cors(corsOptions), (req, res) => {
   const { user, password, email } = req.body.userData;
-
+  
   createUser(user, password, email, res);
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`App listening on port ${port}`);
 });

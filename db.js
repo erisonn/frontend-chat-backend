@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import pg from "pg";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 const client = new pg.Client({
@@ -26,29 +27,35 @@ export function initializeDb() {
 }
 
 export function createUser(user, password, email, res) {
-  const insertQuery = `INSERT INTO users(username, password, email) VALUES ($1, $2, $3)`;
-  const values = [user, password, email];
+  const saltRounds = 10;
 
-  client.query(insertQuery, values, (err, result) => {
+  bcrypt.hash(password, saltRounds, function (err, hash) {
+    const insertQuery = `INSERT INTO users(username, password, email) VALUES ($1, $2, $3)`;
+    const values = [user, hash, email];
+    client.query(insertQuery, values, (err, result) => {
+      if (err) {
+        console.error("Error executing query", err);
+        res.status(400).send(
+          JSON.stringify({
+            postNewUser: {
+              success: false,
+              error: err.constraint,
+            },
+          })
+        );
+      } else {
+        console.log("Query result:", result.rows);
+        res.status(200).send(
+          JSON.stringify({
+            postNewUser: {
+              success: true,
+            },
+          })
+        );
+      }
+    });
     if (err) {
-      console.error("Error executing query", err);
-      res.status(400).send(
-        JSON.stringify({
-          postNewUser: {
-            success: false,
-            error: err.constraint,
-          },
-        })
-      );
-    } else {
-      console.log("Query result:", result.rows);
-      res.status(200).send(
-        JSON.stringify({
-          postNewUser: {
-            success: true,
-          },
-        })
-      );
+      console.log("bcrypt >>>", err);
     }
   });
 }

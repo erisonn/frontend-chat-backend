@@ -16,10 +16,10 @@ export function initializeDb() {
     client
       .connect()
       .then(() => {
-        console.log("Connected to PostgreSQL database");
+        console.log("initializeDb >>> Connected to PostgreSQL database");
       })
       .catch((err) => {
-        console.log(err);
+        console.log("initializeDb >>> ", err);
       });
   };
 
@@ -34,7 +34,7 @@ export function createUser(user, password, email, res) {
     const values = [user, hash, email];
     client.query(insertQuery, values, (err, result) => {
       if (err) {
-        console.error("Error executing query", err);
+        console.error("createUser >>> Error executing query", err);
         res.status(400).send(
           JSON.stringify({
             postNewUser: {
@@ -44,7 +44,7 @@ export function createUser(user, password, email, res) {
           })
         );
       } else {
-        console.log("Query result:", result.rows);
+        console.log("createUser >>> Query result:", result.rows);
         res.status(200).send(
           JSON.stringify({
             postNewUser: {
@@ -59,3 +59,11 @@ export function createUser(user, password, email, res) {
     }
   });
 }
+
+export const getUserByUsername = async (user) => {
+  const query = "SELECT * FROM users WHERE username=$1";
+  const values = [user];
+  const data = await client.query(query, values);
+  if (data.rowCount == 0) return false;
+  return data.rows[0];
+};

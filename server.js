@@ -14,10 +14,12 @@ const CLIENT_URL = process.env.CLIENT_URL;
 const app = express();
 const port = 3000;
 
-var corsOptions = {
-  origin: CLIENT_URL,
-  optionsSuccessStatus: 200,
-};
+
+app.use(cors())
+// var corsOptions = {
+//   origin: CLIENT_URL,
+//   optionsSuccessStatus: 200,
+// };
 
 initializeDb();
 
@@ -33,13 +35,13 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.post("/register", cors(corsOptions), (req, res) => {
+app.post("/register", (req, res) => {
   const { user, password, email } = req.body.userData;
 
   createUser(user, password, email, res);
 });
 
-app.post("/login", cors(corsOptions), (req, res) => {
+app.post("/login", (req, res) => {
   const { user, password } = req.body.userData;
 
   getUserByUsername(user).then((userFromDb) => {

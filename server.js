@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { initializeDb, createUser, getUserByUsername } from "./db.js";
 import bodyParser from "body-parser";
 import express from "express";
-import cors from "cors";
+// import cors from "cors"; // REMOVE THIS PACKAGE?
 import bcrypt from "bcrypt";
 import jsonwebtoken from "jsonwebtoken";
 import { PRIVATE_KEY, validateToken } from "./auth.js";
@@ -13,13 +13,6 @@ const CLIENT_URL = process.env.CLIENT_URL;
 
 const app = express();
 const port = 3000;
-
-
-app.use(cors())
-// var corsOptions = {
-//   origin: CLIENT_URL,
-//   optionsSuccessStatus: 200,
-// };
 
 initializeDb();
 
@@ -32,7 +25,15 @@ app.use(function (req, res, next) {
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
   );
-  next();
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  // preflight response
+  if ('OPTIONS' == req.method) {
+    res.send(200);
+  }
+  else {
+    next();
+  }
 });
 
 app.post("/register", (req, res) => {

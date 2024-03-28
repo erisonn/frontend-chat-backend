@@ -35,7 +35,7 @@ export function createUser(user, password, email, res) {
     client.query(insertQuery, values, (err, result) => {
       if (err) {
         console.error("createUser >>> Error executing query", err);
-        res.status(400).json({
+        res.status(200).json({
           data: {
             success: false,
             error: err.constraint,

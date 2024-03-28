@@ -27,10 +27,11 @@ app.use(function (req, res, next) {
     "Origin, X-Requested-With, Content-Type, Accept"
   );
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Credentials", "true");
 
   // preflight response
   if ("OPTIONS" == req.method) {
-    res.send(200);
+    res.sendStatus(200);
   } else {
     next();
   }
@@ -46,11 +47,8 @@ app.post("/login", (req, res) => {
   const { user, password } = req.body.userData;
 
   getUserByUsername(user).then((userFromDb) => {
-    if (!userFromDb) {
-      return res.status(200).send("User does not exist");
-    }
     bcrypt.compare(password, userFromDb?.password, function (err, result) {
-      if (!result) {
+      if (!result || !userFromDb) {
         return res.status(200).json({
           data: {
             success: false,

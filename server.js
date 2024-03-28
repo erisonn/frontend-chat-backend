@@ -50,13 +50,11 @@ app.post("/login", (req, res) => {
     bcrypt.compare(password, userFromDb?.password, function (err, result) {
       if (!result || !userFromDb) {
         return res.status(200).json({
-          data: {
-            success: false,
-            message: "User or password is incorrect",
-          },
+          success: false,
+          message: "User or password is incorrect",
         });
       } else {
-        //generate token and send it back
+        //generate token and send it as cookie
         const { password, email, ...rest } = userFromDb; // remove password before generating jwt
         const token = jsonwebtoken.sign(
           {
@@ -66,11 +64,8 @@ app.post("/login", (req, res) => {
         );
         res.cookie("jwt_auth", token, { HttpOnly: true });
         return res.status(200).json({
-          data: {
-            success: true,
-            user: rest,
-            // token,
-          },
+          success: true,
+          user: rest,
         });
       }
     });
@@ -84,11 +79,9 @@ app.get("/messages", (req, res) => {
   const parsedUser = JSON.parse(user);
 
   res.status(200).json({
-    data: {
-      user: {
-        username: parsedUser.username,
-        userId: parsedUser.userid,
-      },
+    user: {
+      username: parsedUser.username,
+      userId: parsedUser.userid,
     },
   });
 });

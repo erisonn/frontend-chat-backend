@@ -9,9 +9,7 @@ export const validateToken = (req, res, next) => {
   const token = req.cookies.jwt_auth ?? null;
   if (!token) {
     return res.status(401).json({
-      data: {
-        message: "No token provided",
-      },
+      message: "No token provided",
     });
   }
 
@@ -22,9 +20,7 @@ export const validateToken = (req, res, next) => {
   } catch (err) {
     console.log("validateToken >>>", err);
     return res.status(401).json({
-      data: {
-        message: "Invalid token",
-      },
+      message: "Invalid token",
     });
   }
 };

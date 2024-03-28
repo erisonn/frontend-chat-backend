@@ -36,17 +36,13 @@ export function createUser(user, password, email, res) {
       if (err) {
         console.error("createUser >>> Error executing query", err);
         res.status(200).json({
-          data: {
-            success: false,
-            error: err.constraint,
-          },
+          success: false,
+          error: err.constraint,
         });
       } else {
         console.log("createUser >>> Query result:", result.rows);
         res.status(200).json({
-          data: {
-            success: true,
-          },
+          success: true,
         });
       }
     });

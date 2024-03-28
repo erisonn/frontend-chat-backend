@@ -37,13 +37,13 @@ app.use(function (req, res, next) {
   }
 });
 
-app.post("/register", (req, res) => {
+app.post("/api/register", (req, res) => {
   const { user, password, email } = req.body.userData;
 
   createUser(user, password, email, res);
 });
 
-app.post("/login", (req, res) => {
+app.post("/api/login", (req, res) => {
   const { user, password } = req.body.userData;
 
   getUserByUsername(user).then((userFromDb) => {
@@ -72,9 +72,9 @@ app.post("/login", (req, res) => {
   });
 });
 
-app.use("*", validateToken);
+app.use("*", validateToken); // routes after this line requires jwt
 
-app.get("/messages", (req, res) => {
+app.get("/api/me", (req, res) => {
   const { user } = req.headers;
   const parsedUser = JSON.parse(user);
 
@@ -84,6 +84,13 @@ app.get("/messages", (req, res) => {
       userId: parsedUser.userid,
     },
   });
+});
+
+app.get("/api/messages", (req, res) => {
+  // const { user } = req.headers;
+  // const parsedUser = JSON.parse(user);
+
+  res.status(200).send('messages')
 });
 
 app.listen(port, () => {

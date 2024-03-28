@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { initializeDb, createUser, getUserByUsername } from "./db.js";
 import bodyParser from "body-parser";
 import express from "express";
-// import cors from "cors"; // REMOVE THIS PACKAGE?
+import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import jsonwebtoken from "jsonwebtoken";
 import { PRIVATE_KEY, validateToken } from "./auth.js";
@@ -18,6 +18,7 @@ initializeDb();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", CLIENT_URL);
@@ -28,10 +29,9 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
   // preflight response
-  if ('OPTIONS' == req.method) {
+  if ("OPTIONS" == req.method) {
     res.send(200);
-  }
-  else {
+  } else {
     next();
   }
 });
@@ -51,16 +51,29 @@ app.post("/login", (req, res) => {
     }
     bcrypt.compare(password, userFromDb?.password, function (err, result) {
       if (!result) {
-        return res.status(200).send("User or password is incorrect");
+        return res.status(200).json({
+          data: {
+            success: false,
+            message: "User or password is incorrect",
+          },
+        });
       } else {
         //generate token and send it back
+        const { password, email, ...rest } = userFromDb; // remove password before generating jwt
         const token = jsonwebtoken.sign(
           {
-            user: JSON.stringify(userFromDb),
+            user: JSON.stringify(rest),
           },
           PRIVATE_KEY
         );
-        return res.status(200).json({ data: { userFromDb, token } });
+        res.cookie("jwt_auth", token, { HttpOnly: true });
+        return res.status(200).json({
+          data: {
+            success: true,
+            user: rest,
+            // token,
+          },
+        });
       }
     });
   });
@@ -73,9 +86,11 @@ app.get("/messages", (req, res) => {
   const parsedUser = JSON.parse(user);
 
   res.status(200).json({
-    user: {
-      username: parsedUser.username,
-      userId: parsedUser.userid,
+    data: {
+      user: {
+        username: parsedUser.username,
+        userId: parsedUser.userid,
+      },
     },
   });
 });

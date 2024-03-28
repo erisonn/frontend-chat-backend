@@ -6,9 +6,13 @@ dotenv.config();
 export const PRIVATE_KEY = process.env.AUTH_KEY;
 
 export const validateToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1] || null;
+  const token = req.headers.authorization?.split(" ")[1] || null;
   if (!token) {
-    return res.status(401).send("No token provided");
+    return res.status(401).json({
+      data: {
+        message: "No token provided",
+      },
+    });
   }
 
   try {
@@ -17,6 +21,10 @@ export const validateToken = (req, res, next) => {
     return next();
   } catch (err) {
     console.log("validateToken >>>", err);
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({
+      data: {
+        message: "Invalid token",
+      },
+    });
   }
 };

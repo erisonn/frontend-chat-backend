@@ -35,23 +35,19 @@ export function createUser(user, password, email, res) {
     client.query(insertQuery, values, (err, result) => {
       if (err) {
         console.error("createUser >>> Error executing query", err);
-        res.status(400).send(
-          JSON.stringify({
-            postNewUser: {
-              success: false,
-              error: err.constraint,
-            },
-          })
-        );
+        res.status(400).json({
+          data: {
+            success: false,
+            error: err.constraint,
+          },
+        });
       } else {
         console.log("createUser >>> Query result:", result.rows);
-        res.status(200).send(
-          JSON.stringify({
-            postNewUser: {
-              success: true,
-            },
-          })
-        );
+        res.status(200).json({
+          data: {
+            success: true,
+          },
+        });
       }
     });
     if (err) {

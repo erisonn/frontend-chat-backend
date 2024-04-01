@@ -91,6 +91,45 @@ app.post("/api/login", (req, res) => {
   });
 });
 
+app.get("/api/refresh", (req, res) => {
+  const refreshToken = req.cookies.jwt_refresh ?? null;
+  if (!refreshToken) {
+    return res.status(401).json({
+      message: "No refresh token provided",
+    });
+  }
+  try {
+    const payload = jsonwebtoken.verify(refreshToken, PRIVATE_KEY);
+    const user = JSON.parse(payload.user);
+    const { password, email, ...rest } = user;
+
+    const accessToken = jsonwebtoken.sign(
+      {
+        user: JSON.stringify(rest),
+      },
+      PRIVATE_KEY,
+      { expiresIn: "30m" }
+    );
+    res.cookie("jwt_auth", accessToken, {
+      HttpOnly: true,
+      secure: true,
+      sameSite: true,
+    });
+    res.status(200).json({
+      success: true,
+      user: {
+        username: user.username,
+        userId: user.userid,
+      },
+    });
+  } catch (err) {
+    console.log("refresh >>>", err);
+    return res.status(401).json({
+      message: "Invalid refresh token",
+    });
+  }
+});
+
 app.use("*", validateToken); // routes after this line requires jwt access token
 
 app.get("/api/me", (req, res) => {

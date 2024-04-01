@@ -56,13 +56,32 @@ app.post("/api/login", (req, res) => {
       } else {
         //generate token and send it as cookie
         const { password, email, ...rest } = userFromDb; // remove password before generating jwt
-        const token = jsonwebtoken.sign(
+
+        const refreshToken = jsonwebtoken.sign(
           {
             user: JSON.stringify(rest),
           },
-          PRIVATE_KEY
+          PRIVATE_KEY,
+          { expiresIn: "30d" }
         );
-        res.cookie("jwt_auth", token, { HttpOnly: true });
+
+        const accessToken = jsonwebtoken.sign(
+          {
+            user: JSON.stringify(rest),
+          },
+          PRIVATE_KEY,
+          { expiresIn: "30m" }
+        );
+        res.cookie("jwt_auth", accessToken, {
+          HttpOnly: true,
+          secure: true,
+          sameSite: true,
+        });
+        res.cookie("jwt_refresh", refreshToken, {
+          HttpOnly: true,
+          secure: true,
+          sameSite: true,
+        });
         return res.status(200).json({
           success: true,
           user: rest,
@@ -72,7 +91,7 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-app.use("*", validateToken); // routes after this line requires jwt
+app.use("*", validateToken); // routes after this line requires jwt access token
 
 app.get("/api/me", (req, res) => {
   const { user } = req.headers;
@@ -90,7 +109,7 @@ app.get("/api/messages", (req, res) => {
   // const { user } = req.headers;
   // const parsedUser = JSON.parse(user);
 
-  res.status(200).send('messages')
+  res.status(200).send("messages");
 });
 
 app.listen(port, () => {

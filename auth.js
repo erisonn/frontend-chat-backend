@@ -9,7 +9,7 @@ export const validateToken = (req, res, next) => {
   const token = req.cookies.jwt_auth ?? null;
   if (!token) {
     return res.status(401).json({
-      message: "No token provided",
+      message: "No access token provided",
     });
   }
 
@@ -20,7 +20,7 @@ export const validateToken = (req, res, next) => {
   } catch (err) {
     console.log("validateToken >>>", err);
     return res.status(401).json({
-      message: "Invalid token",
+      message: "Invalid access token",
     });
   }
 };

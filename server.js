@@ -117,10 +117,7 @@ app.get("/api/refresh", (req, res) => {
     });
     res.status(200).json({
       success: true,
-      user: {
-        username: user.username,
-        userId: user.userid,
-      },
+      user: rest,
     });
   } catch (err) {
     console.log("refresh >>>", err);
@@ -137,10 +134,7 @@ app.get("/api/me", (req, res) => {
   const parsedUser = JSON.parse(user);
 
   res.status(200).json({
-    user: {
-      username: parsedUser.username,
-      userId: parsedUser.userid,
-    },
+    user: parsedUser,
   });
 });
 

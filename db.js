@@ -30,7 +30,8 @@ export function createUser(user, password, email, res) {
   const saltRounds = 10;
 
   bcrypt.hash(password, saltRounds, function (err, hash) {
-    const insertQuery = `INSERT INTO users(username, password, email) VALUES ($1, $2, $3)`;
+    const insertQuery =
+      "INSERT INTO users(username, password, email) VALUES ($1, $2, $3)";
     const values = [user, hash, email];
     client.query(insertQuery, values, (err, result) => {
       if (err) {
@@ -58,4 +59,30 @@ export const getUserByUsername = async (user) => {
   const data = await client.query(query, values);
   if (data.rowCount == 0) return false;
   return data.rows[0];
+};
+
+export const createRoom = async (room, res) => {
+  const { title, creatorId, description } = room;
+  const query =
+    "insert into rooms (participant_id, creator_id, room_title, room_description) VALUES ($1, $2, $3, $4)";
+  const values = [creatorId, creatorId, title, description];
+  client.query(query, values, (err, result) => {
+    if (err) {
+      console.error("createRoom >>> Error executing query", err);
+      res.sendStatus(500);
+    } else {
+      console.log("createUser >>> Query result:", result.rows);
+      res.status(200).json({
+        success: true,
+      });
+    }
+  });
+};
+
+export const getRoomsByUserId = async (userId) => {
+  const query = "SELECT * FROM rooms WHERE participant_id=$1";
+  const values = [userId];
+  const data = await client.query(query, values);
+  if (data.rowCount == 0) return false;
+  return data.rows;
 };

@@ -21,6 +21,7 @@ export const validateToken = (req, res, next) => {
     console.log("validateToken >>>", err);
     return res.status(401).json({
       message: "Invalid access token",
+      ...(err.message === "jwt expired" && { error: err.message }),
     });
   }
 };

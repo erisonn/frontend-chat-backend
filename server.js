@@ -1,5 +1,11 @@
 import dotenv from "dotenv";
-import { initializeDb, createUser, getUserByUsername } from "./db.js";
+import {
+  initializeDb,
+  createUser,
+  getUserByUsername,
+  createRoom,
+  getRoomsByUserId,
+} from "./db.js";
 import bodyParser from "body-parser";
 import express from "express";
 import cookieParser from "cookie-parser";
@@ -62,7 +68,7 @@ app.post("/api/login", (req, res) => {
             user: JSON.stringify(rest),
           },
           PRIVATE_KEY,
-          { expiresIn: "30d" }
+          { expiresIn: "5d" }
         );
 
         const accessToken = jsonwebtoken.sign(
@@ -121,8 +127,11 @@ app.get("/api/refresh", (req, res) => {
     });
   } catch (err) {
     console.log("refresh >>>", err);
+    res.clearCookie("jwt_refresh");
+    res.clearCookie("jwt_auth");
     return res.status(401).json({
       message: "Invalid refresh token",
+      ...(err.message === "jwt expired" && { error: err.message }),
     });
   }
 });
@@ -138,11 +147,31 @@ app.get("/api/me", (req, res) => {
   });
 });
 
-app.get("/api/messages", (req, res) => {
-  // const { user } = req.headers;
-  // const parsedUser = JSON.parse(user);
+app.post("/api/create-room", (req, res) => {
+  const { user } = req.headers;
+  const parsedUser = JSON.parse(user);
 
-  res.status(200).send("messages");
+  const { title, description } = req.body;
+  const { _id } = parsedUser;
+
+  const newRoom = {
+    title,
+    creatorId: _id,
+    description,
+  };
+
+  createRoom(newRoom, res);
+});
+
+app.get("/api/rooms", (req, res) => {
+  const { user } = req.headers;
+  const parsedUser = JSON.parse(user);
+
+  getRoomsByUserId(parsedUser._id).then((rooms) => {
+    console.log(rooms);
+    res.status(200).json(rooms)
+  });
+  
 });
 
 app.listen(port, () => {

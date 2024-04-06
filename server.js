@@ -5,6 +5,7 @@ import {
   getUserByUsername,
   createRoom,
   getRoomsByUserId,
+  getMessagesbyRoomId,
 } from "./db.js";
 import bodyParser from "body-parser";
 import express from "express";
@@ -167,11 +168,28 @@ app.get("/api/rooms", (req, res) => {
   const { user } = req.headers;
   const parsedUser = JSON.parse(user);
 
-  getRoomsByUserId(parsedUser._id).then((rooms) => {
-    console.log(rooms);
-    res.status(200).json(rooms)
-  });
-  
+  const getRoomsWithLastMessage = async () => {
+    const rooms = await getRoomsByUserId(parsedUser._id);
+    Promise.all(
+      rooms.map(async (room) => {
+        const data = await getMessagesbyRoomId(room.room_id);
+        const lastMessage = data.slice(-1);
+        const newRoom = {
+          ...room,
+          lastMessage,
+        };
+        return newRoom;
+      })
+    )
+      .then((data) => {
+        res.status(200).json({ rooms: data });
+      })
+      .catch((err) => {
+        console.log("getRoomsWithLastMessage >>>", err);
+        res.sendStatus(500);
+      });
+  };
+  getRoomsWithLastMessage();
 });
 
 app.listen(port, () => {

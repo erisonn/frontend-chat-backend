@@ -83,6 +83,14 @@ export const getRoomsByUserId = async (userId) => {
   const query = "SELECT * FROM rooms WHERE participant_id=$1";
   const values = [userId];
   const data = await client.query(query, values);
-  if (data.rowCount == 0) return false;
+  if (data.rowCount == 0) return [];
   return data.rows;
 };
+
+export const getMessagesbyRoomId = async(roomId) => {
+  const query = "SELECT * FROM messages WHERE room_id=$1";
+  const values = [roomId];
+  const data = await client.query(query, values);
+  if (data.rowCount == 0) return [];
+  return data.rows;
+}
